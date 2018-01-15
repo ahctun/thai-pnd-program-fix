@@ -1,4 +1,5 @@
 @echo off
+setlocal enableDelayedExpansion
 
 REM check Administrator privileges
 	net session >nul 2>&1
@@ -34,41 +35,54 @@ REM check Administrator privileges
 
 	if %OS%==64BIT (
 			set systemPath="C:\Windows\SysWOW64"
+			set pndPath="%ProgramFiles(x86)%\Rdinet"
 			echo ----- Using 64bit operating system ----- 
 	)
 	if %OS%==32BIT (
-			set systemPath="C:\windows\System32"
+			set systemPath="C:\Windows\System32"
+			set pndPath="%ProgramFiles%\Rdinet"
 			echo ----- Using 32bit operating system ----- 
 	)
 
-	REM get file name array form register 
-	SET curpath=%~dp0
-	setlocal enableDelayedExpansion
-	set /a len=0
+	REM get install PND program list
+	set /a pndLen=0
 
-	for /f %%G in ('dir %curpath%register /b') do (
-		set fileName[!len!]=%%~G
-		set /a len+=1
+	for /f %%G in ('dir %pndPath% /b') do (
+		set pnd[!pndLen!]=%%~G
+		set /a pndLen+=1
 	)
-
-	REM copy and register file
-	set j=0
-		:loop_copy_file
-		if %j% equ %len% (
+	
+	REM loop through install PND program
+	set k=0
+		:loop_PND_program
+		if %k% equ %pndLen% (
 			goto :finish
 		)
-		for /f "usebackq delims== tokens=2" %%j in (`set fileName[%j%]`) do (
-			if exist "%systemPath:"=%\%%j" (
-				echo ----- %%j already exist -----
-			) else (
-				echo ----- Copy %%j to system -----
-				echo N | xcopy "%curpath%register\%%j" %systemPath%
-				echo ----- Register %%j to system -----
-				regsvr32 %systemPath:"=%\%%j"
-			)
+		for /f "usebackq delims== tokens=2" %%k in (`set pnd[%k%]`) do (
+				echo ----- %%k Program -----
+					REM get file DLL and OSX from PND program 
+					cd "%pndPath:"=%\%%k"
+					set /a count=0
+
+					for /f %%G in ('dir *.ocx  *.dll /b') do (
+						
+						REM loop through file found in PND program
+						if exist "%systemPath:"=%\%%~G" (
+							echo %%~G already exist
+						) else (
+							echo --- Copy %%~G to system
+							echo N | xcopy "%pndPath:"=%\%%k\%%~G" %systemPath%
+							echo --- Register %%~G to system
+							regsvr32 %systemPath:"=%\%%~G"
+						)
+						
+						set /a count+=1
+						set fileName[!count!]=%%~G
+						
+					)
 		)
-	set /a j=%j%+1
-	goto :loop_copy_file
+	set /a k=%k%+1
+	goto :loop_PND_program
 	
 :finish
 	echo ##########################################################
