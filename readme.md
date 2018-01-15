@@ -35,7 +35,7 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
 * ผู้พัฒนาโปรแกรมขอสงวนสิทธิ์ ในการให้คำรับรองผลลัพธ์ที่ได้
 * จากการทำงานของโปรแกรมนี้ กรณีที่เกิดความเสียหาย
